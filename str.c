@@ -119,7 +119,7 @@ vec_str_t str_split(str_t self, const char *sep)
 	while (token) {
 		vec_str_t v_tmp = vec_extend(vec_str, 1);
 		if (!v_tmp) {
-			vec_free(vec_str);
+			str_list_free(vec_str);
 			return NULL;
 		}
 
@@ -127,7 +127,7 @@ vec_str_t str_split(str_t self, const char *sep)
 
 		str_t s_tmp = str_new(token);
 		if (!s_tmp) {
-			vec_free(vec_str);
+			str_list_free(vec_str);
 			return NULL;
 		}
 
