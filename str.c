@@ -103,39 +103,48 @@ str_t str_clear(str_t self)
 	return str_resize(self, 0);
 }
 
-vec_str_t str_split(str_t self, const char *sep)
+vec_str_t str_split(const str_t self, const char *sep)
 {
 	assert(self);
 	assert(sep);
 
+	str_t copy;
 	vec_str_t vec_str;
 	char *token;
 
-	vec_str = vec_new(sizeof(str_t));
-	if (!vec_str)
+	copy = str_new(self);
+	if (!copy)
 		return NULL;
 
-	token = strtok(self, sep);
+	vec_str = vec_new(sizeof(str_t));
+	if (!vec_str)
+		goto error;
+
+	token = strtok(copy, sep);
 	while (token) {
 		vec_str_t v_tmp = vec_extend(vec_str, 1);
-		if (!v_tmp) {
-			str_list_free(vec_str);
-			return NULL;
-		}
+		if (!v_tmp)
+			goto error;
 
 		vec_str = v_tmp;
 
 		str_t s_tmp = str_new(token);
-		if (!s_tmp) {
-			str_list_free(vec_str);
-			return NULL;
-		}
+		if (!s_tmp)
+			goto error;
 
 		vec_str[vec_count(vec_str) - 1] = s_tmp;
 		token = strtok(NULL, sep);
 	}
 
 	return vec_str;
+
+error:
+	if (copy)
+		str_free(copy);
+	if (vec_str)
+		str_list_free(vec_str);
+
+	return NULL;
 }
 
 void str_list_free(vec_str_t list)
