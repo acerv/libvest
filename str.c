@@ -100,7 +100,7 @@ str_t str_clear(str_t self)
 	return str_resize(self, 0);
 }
 
-vec_str_t str_split(const str_t self, const char *sep)
+vec_str_t str_split(str_t self, const char *sep)
 {
 	assert(self);
 	assert(sep);
@@ -321,7 +321,7 @@ str_t str_repeat(str_t self, const size_t count)
 
 	size_t len = str_length(self);
 
-	self = str_extend(self, count);
+	self = str_extend(self, len * count);
 	if (!self)
 		return NULL;
 
