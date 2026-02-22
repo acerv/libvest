@@ -102,6 +102,8 @@ void *vec_ptr_at(vec_t self, size_t pos)
 		return self;
 
 	vec_obj_t *obj = vec_object(self);
+	if (obj->count == 0)
+		return self;
 
 	if (pos >= obj->count)
 		return obj->data + (obj->count  - 1) * obj->unit_size;
