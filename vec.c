@@ -30,15 +30,20 @@ static inline size_t vec_size(size_t unit_size, size_t capacity)
 
 vec_t vec_new_len(const size_t unit_size, const size_t count)
 {
-	vec_obj_t *obj = malloc(vec_size(unit_size, VEC_INIT_CAPACITY));
+	size_t len = VEC_INIT_CAPACITY;
+
+	while (count > len)
+		len *= 2;
+
+	vec_obj_t *obj = malloc(vec_size(unit_size, len));
 	if (!obj)
 		return NULL;
 
 	obj->count = count;
-	obj->capacity = VEC_INIT_CAPACITY;
+	obj->capacity = len;
 	obj->unit_size = unit_size;
 
-	memset(obj->data, 0, VEC_INIT_CAPACITY * unit_size);
+	memset(obj->data, 0, len * unit_size);
 
 	return (vec_t )obj->data;
 }
