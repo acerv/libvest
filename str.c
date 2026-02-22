@@ -222,6 +222,8 @@ vec_index_t str_find(const str_t self, const char *pat)
 
 	n = str_length(self);
 	m = strlen(pat);
+	if (!m)
+		NULL;
 
 	pos = vec_new(sizeof(size_t));
 	if (!pos)
