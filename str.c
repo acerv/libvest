@@ -22,6 +22,9 @@ static str_t str_resize(str_t self, const size_t size)
 
 	self[size] = '\0';
 
+	// The terminator at position size remains valid in memory
+	// (within capacity), while vec_count correctly tracks length.
+	// This design supports both str_length() and C-string compatibility.
 	self = vec_resize(self, size);
 	if (!self)
 		return NULL;
