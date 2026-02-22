@@ -402,7 +402,7 @@ str_t str_format(str_t self, const char *fmt, ...)
 		case 's':
 			s = va_arg(ap, char *);
 			self = str_append(self, s);
-			pos += str_length(self);
+			pos += strlen(s);
 			break;
 		case 'i':
 			d_num = va_arg(ap, int);
@@ -430,7 +430,7 @@ str_t str_format(str_t self, const char *fmt, ...)
 			break;
 		default:
 			self = str_append(self, "???");
-			pos += str_length(self);
+			pos += strlen("???");
 			continue;
 		}
 	} while (*(++fmt) != '\0');
