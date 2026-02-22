@@ -90,7 +90,7 @@ str_t str_clear(str_t self);
  * @param sep Separator.
  * @return Array of strings.
  */
-vec_str_t str_split(const str_t self, const char *sep);
+vec_str_t str_split(str_t self, const char *sep);
 
 /** @brief Release an array of strings.
  *
