@@ -82,6 +82,7 @@ size_t vec_count(const vec_t self) __attribute__((pure));
 size_t vec_capacity(const vec_t self) __attribute__((pure));
 
 /** @brief Return the pointer to where item at `pos` is located.
+ * If `pos` is bigger than the size of the vector, the last items is returned.
  *
  * @param self Vector object.
  * @param pos Position of the item inside vector.
