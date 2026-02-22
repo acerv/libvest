@@ -76,7 +76,9 @@ str_t str_insert(str_t self, const size_t pos, const char *str)
 	assert(self);
 	assert(str);
 
-	if (pos > str_length(self))
+	size_t old_len = str_length(self);
+
+	if (pos > old_len)
 		return NULL;
 
 	size_t str_len = strlen(str);
@@ -85,9 +87,7 @@ str_t str_insert(str_t self, const size_t pos, const char *str)
 	if (!self)
 		return NULL;
 
-	vec_copy(self, pos + str_len, vec_ptr_at(self, pos),
-		str_length(self) - pos);
-
+	vec_copy(self, pos + str_len, vec_ptr_at(self, pos), old_len - pos);
 	vec_copy(self, pos, str, str_len);
 
 	return self;
