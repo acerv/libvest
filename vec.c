@@ -133,6 +133,8 @@ void vec_copy(vec_t self, const size_t pos, const void *items, size_t len)
 
 	/* memory can overlap, so we move data inside a buffer before copying */
 	vec_t buff = vec_new_len(obj->unit_size, len);
+	if (!buff)
+		return;
 
 	memcpy(buff, items, len * obj->unit_size);
 	memcpy(vec_ptr_at(self, pos), buff, len * obj->unit_size);
