@@ -117,7 +117,14 @@ vec_str_t str_split(str_t self, const char *sep)
 
 	token = strtok(self, sep);
 	while (token) {
-		vec_str = vec_extend(vec_str, 1);
+		vec_str_t tmp = vec_extend(vec_str, 1);
+		if (!tmp) {
+			vec_free(vec_str);
+			return NULL;
+		}
+
+		vec_str = tmp;
+
 		vec_str[vec_count(vec_str) - 1] = str_new(token);
 		token = strtok(NULL, sep);
 	}
