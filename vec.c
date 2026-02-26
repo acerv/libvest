@@ -50,6 +50,8 @@ vec_t vec_new(const size_t unit_size)
 
 void vec_free(vec_t self)
 {
+	assert(self);
+
 	vec_obj_t *obj = vec_object(self);
 	free(obj);
 }
