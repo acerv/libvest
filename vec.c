@@ -63,10 +63,13 @@ vec_t vec_resize(vec_t self, const size_t count)
 		while (count >= obj->capacity)
 			obj->capacity *= 2;
 
-		obj = realloc(obj, vec_size(obj->unit_size, obj->capacity));
-		if (!obj)
+		vec_obj_t *tmp;
+
+		tmp = realloc(obj, vec_size(obj->unit_size, obj->capacity));
+		if (!tmp)
 			return NULL;
 
+		obj = tmp;
 		memset(obj->data + (old_size * obj->unit_size),
 			0, (obj->capacity  - old_size) * obj->unit_size);
 	}
