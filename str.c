@@ -451,7 +451,6 @@ str_t str_format(str_t self, const char *fmt, ...)
 			break;
 		case 'i':
 			d_num = va_arg(ap, int);
-			memset(buf, 0, BUFSIZE);
 			pos += (size_t)snprintf(buf, BUFSIZE, "%d", d_num);
 			tmp = str_append(self, buf);
 			if (!tmp)
@@ -461,7 +460,6 @@ str_t str_format(str_t self, const char *fmt, ...)
 			break;
 		case 'l':
 			l_num = va_arg(ap, long long);
-			memset(buf, 0, BUFSIZE);
 			pos += (size_t)snprintf(buf, BUFSIZE, "%lld", l_num);
 			tmp = str_append(self, buf);
 			if (!tmp)
@@ -471,7 +469,6 @@ str_t str_format(str_t self, const char *fmt, ...)
 			break;
 		case 'u':
 			u_num = va_arg(ap, unsigned long long);
-			memset(buf, 0, BUFSIZE);
 			pos += (size_t)snprintf(buf, BUFSIZE, "%llu", u_num);
 			tmp = str_append(self, buf);
 			if (!tmp)
@@ -481,7 +478,6 @@ str_t str_format(str_t self, const char *fmt, ...)
 			break;
 		case 'f':
 			f_num = va_arg(ap, double);
-			memset(buf, 0, BUFSIZE);
 			pos += (size_t)snprintf(buf, BUFSIZE, "%g", f_num);
 			tmp = str_append(self, buf);
 			if (!tmp)
