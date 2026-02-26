@@ -140,7 +140,8 @@ vec_str_t str_split(str_t self, const char *sep)
 
 void str_list_free(vec_str_t list)
 {
-	assert(list);
+	if (!list)
+		return;
 
 	for (size_t i = 0; i < vec_count(list); i++)
 		str_free(list[i]);
