@@ -391,7 +391,13 @@ str_t str_format(str_t self, const char *fmt, ...)
 	if (*fmt == '\0')
 		return self;
 
-	self = str_clear(self);
+	str_t tmp;
+
+	tmp = str_clear(self);
+	if (!tmp)
+		return NULL;
+
+	self = tmp;
 
 	char *s;
 	int d_num;
@@ -423,53 +429,59 @@ str_t str_format(str_t self, const char *fmt, ...)
 		switch (*fmt) {
 		case 's':
 			s = va_arg(ap, char *);
-			self = str_append(self, s);
-			if (!self)
+			tmp = str_append(self, s);
+			if (!tmp)
 				return NULL;
 
+			self = tmp;
 			pos += strlen(s);
 			break;
 		case 'i':
 			d_num = va_arg(ap, int);
 			memset(buf, 0, BUFSIZE);
 			pos += (size_t)snprintf(buf, BUFSIZE, "%d", d_num);
-			self = str_append(self, buf);
-			if (!self)
+			tmp = str_append(self, buf);
+			if (!tmp)
 				return NULL;
 
+			self = tmp;
 			break;
 		case 'l':
 			l_num = va_arg(ap, long long);
 			memset(buf, 0, BUFSIZE);
 			pos += (size_t)snprintf(buf, BUFSIZE, "%lld", l_num);
-			self = str_append(self, buf);
-			if (!self)
+			tmp = str_append(self, buf);
+			if (!tmp)
 				return NULL;
 
+			self = tmp;
 			break;
 		case 'u':
 			u_num = va_arg(ap, unsigned long long);
 			memset(buf, 0, BUFSIZE);
 			pos += (size_t)snprintf(buf, BUFSIZE, "%llu", u_num);
-			self = str_append(self, buf);
-			if (!self)
+			tmp = str_append(self, buf);
+			if (!tmp)
 				return NULL;
 
+			self = tmp;
 			break;
 		case 'f':
 			f_num = va_arg(ap, double);
 			memset(buf, 0, BUFSIZE);
 			pos += (size_t)snprintf(buf, BUFSIZE, "%g", f_num);
-			self = str_append(self, buf);
-			if (!self)
+			tmp = str_append(self, buf);
+			if (!tmp)
 				return NULL;
 
+			self = tmp;
 			break;
 		default:
-			self = str_append(self, "???");
-			if (!self)
+			tmp = str_append(self, "???");
+			if (!tmp)
 				return NULL;
 
+			self = tmp;
 			pos += strlen("???");
 			continue;
 		}
