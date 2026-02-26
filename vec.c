@@ -62,8 +62,13 @@ vec_t vec_resize(vec_t self, const size_t count)
 	size_t old_size = obj->count;
 
 	if (count >= obj->capacity) {
-		while (count >= obj->capacity)
+		while (count >= obj->capacity) {
+			if (obj->capacity > SIZE_MAX / 2) {
+				obj->capacity = SIZE_MAX;
+				break;
+			}
 			obj->capacity *= 2;
+		}
 
 		vec_obj_t *tmp;
 
