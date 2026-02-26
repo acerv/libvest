@@ -339,11 +339,11 @@ str_t str_repeat(str_t self, const size_t count)
 
 	size_t len = str_length(self);
 
-	self = str_extend(self, len * count);
+	self = str_extend(self, len * (count - 1));
 	if (!self)
 		return NULL;
 
-	for (size_t i = 0; i < count; i++)
+	for (size_t i = 1; i < count; i++)
 		vec_copy(self, i * len, self, len);
 
 	return self;
