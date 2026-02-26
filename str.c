@@ -125,7 +125,13 @@ vec_str_t str_split(str_t self, const char *sep)
 
 		vec_str = tmp;
 
-		vec_str[vec_count(vec_str) - 1] = str_new(token);
+		str_t new_str = str_new(token);
+		if (!new_str) {
+			str_list_free(vec_str);
+			return NULL;
+		}
+
+		vec_str[vec_count(vec_str) - 1] = new_str;
 		token = strtok(NULL, sep);
 	}
 
