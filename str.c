@@ -3,6 +3,8 @@
  * Copyright (c) 2025 Andrea Cervesato <andrea.cervesato@mailbox.org>
  */
 
+#define _GNU_SOURCE
+
 #include "str.h"
 #include "vec.h"
 #include <stdio.h>
@@ -109,33 +111,44 @@ vec_str_t str_split(str_t self, const char *sep)
 	assert(sep);
 
 	vec_str_t vec_str;
+	str_t copy;
 	char *token;
+	char *saveptr;
+
+	copy = str_new(self);
+	if (!copy)
+		return NULL;
 
 	vec_str = vec_new(sizeof(str_t));
 	if (!vec_str)
-		return NULL;
+		goto error;
 
-	token = strtok(self, sep);
+	token = strtok_r(copy, sep, &saveptr);
 	while (token) {
 		vec_str_t tmp = vec_extend(vec_str, 1);
-		if (!tmp) {
-			vec_free(vec_str);
-			return NULL;
-		}
+		if (!tmp)
+			goto error;
 
 		vec_str = tmp;
 
 		str_t new_str = str_new(token);
-		if (!new_str) {
-			str_list_free(vec_str);
-			return NULL;
-		}
+		if (!new_str)
+			goto error;
 
 		vec_str[vec_count(vec_str) - 1] = new_str;
-		token = strtok(NULL, sep);
+		token = strtok_r(NULL, sep, &saveptr);
 	}
 
+	str_free(copy);
+
 	return vec_str;
+error:
+	if (vec_str)
+		str_list_free(vec_str);
+	if (copy)
+		str_free(copy);
+
+	return NULL;
 }
 
 void str_list_free(vec_str_t list)
