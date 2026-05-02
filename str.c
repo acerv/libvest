@@ -29,7 +29,11 @@ static str_t str_resize(str_t self, const size_t size)
 
 static str_t str_extend(str_t self, const size_t count)
 {
-	return str_resize(self, str_length(self) + count);
+	size_t len = str_length(self);
+	if (len > SIZE_MAX - count)
+		return NULL;
+
+	return str_resize(self, len + count);
 }
 
 str_t str_empty(void)
