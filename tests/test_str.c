@@ -8,6 +8,7 @@
 #include "utils.h"
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
 
 static void test_str_empty(void)
 {
@@ -279,6 +280,16 @@ static void test_str_repeat(void)
 	str_free(str);
 }
 
+static void test_str_repeat_overflow(void)
+{
+	str_t str = str_new("a");
+
+	str_t result = str_repeat(str, SIZE_MAX);
+	assert(result == NULL);
+
+	str_free(str);
+}
+
 static void test_str_range_forward(void)
 {
 	str_t str = str_new("ciao mondo ciao");
@@ -542,6 +553,7 @@ int main(void)
 	RUN_TEST(test_str_range_end_overflow);
 	RUN_TEST(test_str_range_empty);
 	RUN_TEST(test_str_repeat);
+	RUN_TEST(test_str_repeat_overflow);
 	RUN_TEST(test_str_remove);
 	RUN_TEST(test_str_replace);
 	RUN_TEST(test_str_replace_smaller);

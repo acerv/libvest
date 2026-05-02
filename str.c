@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 #define BUFSIZE 64
 
@@ -362,7 +363,12 @@ str_t str_repeat(str_t self, const size_t count)
 
 	size_t len = str_length(self);
 
-	self = str_extend(self, len * (count - 1));
+	if (len > SIZE_MAX / count)
+		return NULL;
+
+	size_t total = len * count;
+
+	self = str_extend(self, total - len);
 	if (!self)
 		return NULL;
 
