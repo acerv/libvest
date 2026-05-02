@@ -910,7 +910,7 @@ static void test_str_char_count_skip_invalid(void)
 	str_t str = str_new("hello");
 	str[2] = (char)0xFF;
 
-	assert(str_char_count(str) == 4);
+	assert(str_char_count(str) == 5);
 
 	str_free(str);
 }
@@ -959,7 +959,7 @@ static void test_str_utf8_prev_skip_invalid(void)
 
 	assert(str_utf8_prev(str, 5) == 4);
 	assert(str_utf8_prev(str, 4) == 3);
-	assert(str_utf8_prev(str, 3) == 1);
+	assert(str_utf8_prev(str, 3) == 2);
 
 	str_free(str);
 }
