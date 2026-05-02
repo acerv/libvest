@@ -144,10 +144,10 @@ void *vec_ptr_at(vec_t self, size_t pos)
 
 void vec_copy(vec_t self, const size_t pos, const void *items, size_t len)
 {
-	assert(items);
-
 	if (!len)
 		return;
+
+	assert(items);
 
 	vec_obj_t *obj = vec_object(self);
 	if (pos >= obj->count)
