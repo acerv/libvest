@@ -110,6 +110,32 @@ static void test_vec_ptr_at(void)
 	vec_free(vec);
 }
 
+static void test_vec_ptr_at_empty(void)
+{
+	vec_t vec = vec_new(sizeof(int));
+
+	assert(vec_count(vec) == 0);
+	assert(vec_ptr_at(vec, 0) == NULL);
+	assert(vec_ptr_at(vec, 999) == NULL);
+
+	vec_free(vec);
+}
+
+static void test_vec_ptr_at_oob(void)
+{
+	const size_t len = 10;
+	size_t *vec = vec_new_len(sizeof(size_t), len);
+	size_t *item;
+
+	for (size_t i = 0; i < len; i++)
+		vec_set(vec, i, &i);
+
+	item = vec_ptr_at(vec, len + 100);
+	assert(*item == (len - 1));
+
+	vec_free(vec);
+}
+
 #define VEC_COPY_LEN 20
 
 static void test_vec_copy(void)
@@ -183,6 +209,8 @@ int main(void)
 	RUN_TEST(test_vec_extend);
 	RUN_TEST(test_vec_set_get);
 	RUN_TEST(test_vec_ptr_at);
+	RUN_TEST(test_vec_ptr_at_empty);
+	RUN_TEST(test_vec_ptr_at_oob);
 	RUN_TEST(test_vec_copy);
 	RUN_TEST(test_vec_copy_out_of_bounds);
 

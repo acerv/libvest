@@ -401,6 +401,68 @@ static void test_str_format_unknown(void)
 	str_free(str);
 }
 
+static void test_str_startswith_edge(void)
+{
+	str_t str = str_new("hello");
+
+	assert(str_startswith(str, "hello"));
+	assert(str_startswith(str, ""));
+	assert(!str_startswith(str, "helloo"));
+	assert(!str_startswith(str, "world"));
+
+	str_free(str);
+}
+
+static void test_str_endswith_edge(void)
+{
+	str_t str = str_new("hello");
+
+	assert(str_endswith(str, "hello"));
+	assert(str_endswith(str, ""));
+	assert(!str_endswith(str, "hhello"));
+	assert(!str_endswith(str, "world"));
+
+	str_free(str);
+}
+
+static void test_str_find_no_match(void)
+{
+	str_t str = str_new("hello");
+
+	vec_index_t pos = str_find(str, "xyz");
+	assert(pos);
+	assert(vec_count(pos) == 0);
+	vec_free(pos);
+
+	pos = str_find(str, "");
+	assert(pos == NULL);
+
+	str_free(str);
+}
+
+static void test_str_insert_at_end(void)
+{
+	str_t str = str_new("hello");
+
+	str = str_insert(str, 5, " world");
+	assert(str);
+	assert(memcmp(str, "hello world", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_range_empty(void)
+{
+	str_t str = str_new("hello");
+
+	str_t empty = str_range(str, 0, 0);
+	assert(empty);
+	assert(str_length(empty) == 0);
+	str_free(empty);
+
+	str_free(str);
+}
+
 int main(void)
 {
 	RUN_TEST(test_str_empty);
@@ -433,6 +495,11 @@ int main(void)
 	RUN_TEST(test_str_format_long);
 	RUN_TEST(test_str_format_unsigned_long);
 	RUN_TEST(test_str_format_unknown);
+	RUN_TEST(test_str_startswith_edge);
+	RUN_TEST(test_str_endswith_edge);
+	RUN_TEST(test_str_find_no_match);
+	RUN_TEST(test_str_insert_at_end);
+	RUN_TEST(test_str_range_empty);
 
 	return 0;
 }
