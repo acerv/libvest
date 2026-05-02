@@ -180,6 +180,83 @@ static void test_str_replace_count(void)
 	str_free(str);
 }
 
+static void test_str_replace_empty(void)
+{
+	str_t str = str_new("hello world hello world");
+
+	str = str_replace(str, " world", "", -1);
+	assert(str);
+	assert(memcmp(str, "hello hello", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_replace_count_limit_partial(void)
+{
+	str_t str = str_new("aaa bbb aaa bbb aaa");
+
+	str = str_replace(str, "aaa", "ccc", 2);
+	assert(str);
+	assert(memcmp(str, "ccc bbb ccc bbb aaa", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_replace_not_found(void)
+{
+	str_t str = str_new("hello world");
+
+	str_t result = str_replace(str, "xyz", "abc", -1);
+	assert(result == str);
+	assert(memcmp(result, "hello world", str_length(result)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_replace_shrink_multiple(void)
+{
+	str_t str = str_new("abcXXXdefXXXghiXXXjkl");
+
+	str = str_replace(str, "XXX", "-", -1);
+	assert(str);
+	assert(memcmp(str, "abc-def-ghi-jkl", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_replace_grow_multiple(void)
+{
+	str_t str = str_new("a_b_a_b_a");
+
+	str = str_replace(str, "_", "---", -1);
+	assert(str);
+	assert(memcmp(str, "a---b---a---b---a", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_replace_at_boundaries(void)
+{
+	str_t str = str_new("XhelloX");
+
+	str = str_replace(str, "X", "", -1);
+	assert(str);
+	assert(memcmp(str, "hello", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_replace_consecutive(void)
+{
+	str_t str = str_new("XXhelloXX");
+
+	str = str_replace(str, "XX", "-", -1);
+	assert(str);
+	assert(memcmp(str, "-hello-", str_length(str)) == 0);
+
+	str_free(str);
+}
+
 static void test_str_remove(void)
 {
 	str_t str = str_new("hello world hello");
@@ -331,13 +408,20 @@ int main(void)
 	RUN_TEST(test_str_repeat);
 	RUN_TEST(test_str_remove);
 	RUN_TEST(test_str_replace);
+	RUN_TEST(test_str_replace_smaller);
+	RUN_TEST(test_str_replace_bigger);
+	RUN_TEST(test_str_replace_count);
+	RUN_TEST(test_str_replace_empty);
+	RUN_TEST(test_str_replace_count_limit_partial);
+	RUN_TEST(test_str_replace_not_found);
+	RUN_TEST(test_str_replace_shrink_multiple);
+	RUN_TEST(test_str_replace_grow_multiple);
+	RUN_TEST(test_str_replace_at_boundaries);
+	RUN_TEST(test_str_replace_consecutive);
 	RUN_TEST(test_str_find);
 	RUN_TEST(test_str_startswith);
 	RUN_TEST(test_str_endswith);
 	RUN_TEST(test_str_split);
-	RUN_TEST(test_str_replace_count);
-	RUN_TEST(test_str_replace_bigger);
-	RUN_TEST(test_str_replace_smaller);
 	RUN_TEST(test_str_insert);
 	RUN_TEST(test_str_clear);
 	RUN_TEST(test_str_append);
