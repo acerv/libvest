@@ -456,7 +456,7 @@ str_t str_format(str_t self, const char *fmt, ...)
 			char pct = '%';
 			vec_set(self, pos, &pct);
 			pos++;
-			break;
+			goto exit;
 		}
 
 		switch (*fmt) {
