@@ -110,12 +110,19 @@ static void test_vec_ptr_at(void)
 	vec_free(vec);
 }
 
-static void test_vec_ptr_at_empty(void)
+static void test_vec_ptr_at_empty_zero(void)
 {
 	vec_t vec = vec_new(sizeof(int));
 
-	assert(vec_count(vec) == 0);
 	assert(vec_ptr_at(vec, 0) == NULL);
+
+	vec_free(vec);
+}
+
+static void test_vec_ptr_at_empty_large_index(void)
+{
+	vec_t vec = vec_new(sizeof(int));
+
 	assert(vec_ptr_at(vec, 999) == NULL);
 
 	vec_free(vec);
@@ -209,7 +216,8 @@ int main(void)
 	RUN_TEST(test_vec_extend);
 	RUN_TEST(test_vec_set_get);
 	RUN_TEST(test_vec_ptr_at);
-	RUN_TEST(test_vec_ptr_at_empty);
+	RUN_TEST(test_vec_ptr_at_empty_zero);
+	RUN_TEST(test_vec_ptr_at_empty_large_index);
 	RUN_TEST(test_vec_ptr_at_oob);
 	RUN_TEST(test_vec_copy);
 	RUN_TEST(test_vec_copy_out_of_bounds);

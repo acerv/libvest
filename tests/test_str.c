@@ -279,35 +279,51 @@ static void test_str_repeat(void)
 	str_free(str);
 }
 
-static void test_str_range(void)
+static void test_str_range_forward(void)
 {
 	str_t str = str_new("ciao mondo ciao");
 
-	str_t str_r = str_range(str, 5, 10); 
+	str_t str_r = str_range(str, 5, 10);
 	assert(str_r);
 	assert(memcmp(str_r, "mondo", str_length(str_r)) == 0);
-	str_free(str_r);
 
-	str_r = str_range(str, 10, 5); 
+	str_free(str_r);
+	str_free(str);
+}
+
+static void test_str_range_reversed(void)
+{
+	str_t str = str_new("ciao mondo ciao");
+
+	str_t str_r = str_range(str, 10, 5);
 	assert(str_r);
 	assert(memcmp(str_r, "mondo", str_length(str_r)) == 0);
-	str_free(str_r);
 
-	str_r = str_range(str, 1000, 5); 
+	str_free(str_r);
+	str_free(str);
+}
+
+static void test_str_range_start_overflow(void)
+{
+	str_t str = str_new("ciao mondo ciao");
+
+	str_t str_r = str_range(str, 1000, 5);
 	assert(str_r);
 	assert(memcmp(str_r, "mondo ciao", str_length(str_r)) == 0);
-	str_free(str_r);
 
-	str_r = str_range(str, 5, 1000); 
+	str_free(str_r);
+	str_free(str);
+}
+
+static void test_str_range_end_overflow(void)
+{
+	str_t str = str_new("ciao mondo ciao");
+
+	str_t str_r = str_range(str, 5, 1000);
 	assert(str_r);
 	assert(memcmp(str_r, "mondo ciao", str_length(str_r)) == 0);
-	str_free(str_r);
 
-	str_r = str_range(str, 5, 5); 
-	assert(str_r);
-	assert(memcmp(str_r, "", str_length(str_r)) == 0);
 	str_free(str_r);
-
 	str_free(str);
 }
 
@@ -401,25 +417,73 @@ static void test_str_format_unknown(void)
 	str_free(str);
 }
 
-static void test_str_startswith_edge(void)
+static void test_str_startswith_exact(void)
 {
 	str_t str = str_new("hello");
 
 	assert(str_startswith(str, "hello"));
+
+	str_free(str);
+}
+
+static void test_str_startswith_empty(void)
+{
+	str_t str = str_new("hello");
+
 	assert(str_startswith(str, ""));
+
+	str_free(str);
+}
+
+static void test_str_startswith_too_long(void)
+{
+	str_t str = str_new("hello");
+
 	assert(!str_startswith(str, "helloo"));
+
+	str_free(str);
+}
+
+static void test_str_startswith_no_match(void)
+{
+	str_t str = str_new("hello");
+
 	assert(!str_startswith(str, "world"));
 
 	str_free(str);
 }
 
-static void test_str_endswith_edge(void)
+static void test_str_endswith_exact(void)
 {
 	str_t str = str_new("hello");
 
 	assert(str_endswith(str, "hello"));
+
+	str_free(str);
+}
+
+static void test_str_endswith_empty(void)
+{
+	str_t str = str_new("hello");
+
 	assert(str_endswith(str, ""));
+
+	str_free(str);
+}
+
+static void test_str_endswith_too_long(void)
+{
+	str_t str = str_new("hello");
+
 	assert(!str_endswith(str, "hhello"));
+
+	str_free(str);
+}
+
+static void test_str_endswith_no_match(void)
+{
+	str_t str = str_new("hello");
+
 	assert(!str_endswith(str, "world"));
 
 	str_free(str);
@@ -432,9 +496,16 @@ static void test_str_find_no_match(void)
 	vec_index_t pos = str_find(str, "xyz");
 	assert(pos);
 	assert(vec_count(pos) == 0);
-	vec_free(pos);
 
-	pos = str_find(str, "");
+	vec_free(pos);
+	str_free(str);
+}
+
+static void test_str_find_empty_pattern(void)
+{
+	str_t str = str_new("hello");
+
+	vec_index_t pos = str_find(str, "");
 	assert(pos == NULL);
 
 	str_free(str);
@@ -465,8 +536,11 @@ static void test_str_range_empty(void)
 
 int main(void)
 {
-	RUN_TEST(test_str_empty);
-	RUN_TEST(test_str_range);
+	RUN_TEST(test_str_range_forward);
+	RUN_TEST(test_str_range_reversed);
+	RUN_TEST(test_str_range_start_overflow);
+	RUN_TEST(test_str_range_end_overflow);
+	RUN_TEST(test_str_range_empty);
 	RUN_TEST(test_str_repeat);
 	RUN_TEST(test_str_remove);
 	RUN_TEST(test_str_replace);
@@ -481,6 +555,8 @@ int main(void)
 	RUN_TEST(test_str_replace_at_boundaries);
 	RUN_TEST(test_str_replace_consecutive);
 	RUN_TEST(test_str_find);
+	RUN_TEST(test_str_find_no_match);
+	RUN_TEST(test_str_find_empty_pattern);
 	RUN_TEST(test_str_startswith);
 	RUN_TEST(test_str_endswith);
 	RUN_TEST(test_str_split);
@@ -495,11 +571,16 @@ int main(void)
 	RUN_TEST(test_str_format_long);
 	RUN_TEST(test_str_format_unsigned_long);
 	RUN_TEST(test_str_format_unknown);
-	RUN_TEST(test_str_startswith_edge);
-	RUN_TEST(test_str_endswith_edge);
-	RUN_TEST(test_str_find_no_match);
+	RUN_TEST(test_str_startswith_exact);
+	RUN_TEST(test_str_startswith_empty);
+	RUN_TEST(test_str_startswith_too_long);
+	RUN_TEST(test_str_startswith_no_match);
+	RUN_TEST(test_str_endswith_exact);
+	RUN_TEST(test_str_endswith_empty);
+	RUN_TEST(test_str_endswith_too_long);
+	RUN_TEST(test_str_endswith_no_match);
 	RUN_TEST(test_str_insert_at_end);
-	RUN_TEST(test_str_range_empty);
+	RUN_TEST(test_str_empty);
 
 	return 0;
 }
