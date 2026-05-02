@@ -158,5 +158,6 @@ void vec_get(const vec_t self, const size_t pos, void *item)
 	vec_obj_t *obj = vec_object(self);
 	void *ptr = vec_ptr_at(self, pos);
 
-	memcpy(item, ptr, obj->unit_size);
+	if (ptr)
+		memcpy(item, ptr, obj->unit_size);
 }
