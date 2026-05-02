@@ -119,6 +119,87 @@ str_free(str);
 
 All the other features can be found inside the `str.h` header file.
 
+## UTF-8 Support
+
+All existing string functions (`str_find`, `str_replace`, `str_range`, etc.)
+operate at the byte level and work correctly with UTF-8 strings — valid UTF-8
+byte sequences are unambiguous, so byte-level search and replacement produces
+the same results as codepoint-level operations.
+
+The only place byte-level semantics differ from codepoint-level semantics is
+**positioning**: passing a codepoint index where a byte offset is expected will
+produce incorrect results with multi-byte characters. For this purpose the
+library provides UTF-8 conversion utilities.
+
+### Validation
+
+```c
+str_t str = str_new("café");
+
+if (str_utf8_valid(str)) {
+    // string is well-formed UTF-8
+}
+```
+
+### Counting codepoints
+
+`str_length()` returns the byte count. `str_char_count()` returns the number
+of Unicode codepoints.
+
+```c
+str_t str = str_new("café");
+
+str_length(str);     // returns 5 (bytes: c a f é(2 bytes))
+str_char_count(str); // returns 4 (codepoints)
+```
+
+### Converting codepoint indices to byte offsets
+
+Use `str_utf8_byte_at()` to translate a codepoint index into the correct
+byte offset for existing functions.
+
+```c
+str_t str = str_new("café");
+
+// Extract "é" (codepoint index 3) by converting to byte offsets
+str_t sub = str_range(str,
+    str_utf8_byte_at(str, 3),  // byte offset 3
+    str_utf8_byte_at(str, 4)   // byte offset 5
+);
+// sub == "é"
+```
+
+### Navigation
+
+Iterate through a string one codepoint at a time:
+
+```c
+str_t str = str_new("café");
+size_t offset = 0;
+
+while (offset < str_length(str)) {
+    // process codepoint at byte offset
+    offset = str_utf8_next(str, offset);
+}
+```
+
+### Encode / Decode
+
+Low-level primitives for converting between codepoint values and UTF-8 bytes:
+
+```c
+// Decode: bytes → codepoint
+const char *bytes = "\xc3\xa9";
+size_t len;
+uint32_t cp = str_utf8_decode(bytes, &len);
+// cp == 0xE9 (é), len == 2
+
+// Encode: codepoint → bytes
+char buf[4];
+size_t written = str_utf8_encode(buf, 0x1F30D);
+// buf == "\xf0\x9f\x8c\x8d" (🌍), written == 4
+```
+
 ## Include this library in your project
 
 If you are using the `meson` build system, you can define a subproject as follows:
