@@ -448,10 +448,26 @@ str_t str_format(str_t self, const char *fmt, ...)
 
 		fmt++;
 
-		if (*fmt == '\0')
+		if (*fmt == '\0') {
+			self = vec_extend(self, 1);
+			if (!self)
+				goto exit;
+
+			char pct = '%';
+			vec_set(self, pos, &pct);
+			pos++;
 			break;
+		}
 
 		switch (*fmt) {
+		case '%':
+			self = vec_extend(self, 1);
+			if (!self)
+				goto exit;
+
+			vec_set(self, pos, fmt);
+			pos++;
+			break;
 		case 's':
 			s = va_arg(ap, char *);
 			self = str_append(self, s);

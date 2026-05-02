@@ -439,6 +439,28 @@ static void test_str_format_unknown(void)
 	str_free(str);
 }
 
+static void test_str_format_trailing_percent(void)
+{
+	str_t str = str_empty();
+
+	str = str_format(str, "hello%");
+	assert(str);
+	assert(memcmp(str, "hello%", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_format_double_percent(void)
+{
+	str_t str = str_empty();
+
+	str = str_format(str, "100%% done");
+	assert(str);
+	assert(memcmp(str, "100% done", str_length(str)) == 0);
+
+	str_free(str);
+}
+
 static void test_str_startswith_exact(void)
 {
 	str_t str = str_new("hello");
@@ -595,6 +617,8 @@ int main(void)
 	RUN_TEST(test_str_format_long);
 	RUN_TEST(test_str_format_unsigned_long);
 	RUN_TEST(test_str_format_unknown);
+	RUN_TEST(test_str_format_trailing_percent);
+	RUN_TEST(test_str_format_double_percent);
 	RUN_TEST(test_str_startswith_exact);
 	RUN_TEST(test_str_startswith_empty);
 	RUN_TEST(test_str_startswith_too_long);
