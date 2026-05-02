@@ -443,7 +443,7 @@ str_t str_format(str_t self, const char *fmt, ...)
 
 	do {
 		if (*fmt != '%') {
-			self = vec_extend(self, 1);
+			self = str_extend(self, 1);
 			if (!self)
 				goto exit;
 
@@ -467,7 +467,7 @@ str_t str_format(str_t self, const char *fmt, ...)
 
 		switch (*fmt) {
 		case '%':
-			self = vec_extend(self, 1);
+			self = str_extend(self, 1);
 			if (!self)
 				goto exit;
 
