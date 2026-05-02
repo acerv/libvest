@@ -430,7 +430,7 @@ str_t str_format(str_t self, const char *fmt, ...)
 		if (*fmt != '%') {
 			self = vec_extend(self, 1);
 			if (!self)
-				return NULL;
+				goto exit;
 
 			vec_set(self, pos, &*fmt);
 			pos++;
@@ -447,7 +447,7 @@ str_t str_format(str_t self, const char *fmt, ...)
 			s = va_arg(ap, char *);
 			self = str_append(self, s);
 			if (!self)
-				return NULL;
+				goto exit;
 
 			pos += strlen(s);
 			break;
@@ -457,7 +457,7 @@ str_t str_format(str_t self, const char *fmt, ...)
 			pos += (size_t)snprintf(buf, BUFSIZE, "%d", d_num);
 			self = str_append(self, buf);
 			if (!self)
-				return NULL;
+				goto exit;
 
 			break;
 		case 'l':
@@ -466,7 +466,7 @@ str_t str_format(str_t self, const char *fmt, ...)
 			pos += (size_t)snprintf(buf, BUFSIZE, "%lld", l_num);
 			self = str_append(self, buf);
 			if (!self)
-				return NULL;
+				goto exit;
 
 			break;
 		case 'u':
@@ -475,7 +475,7 @@ str_t str_format(str_t self, const char *fmt, ...)
 			pos += (size_t)snprintf(buf, BUFSIZE, "%llu", u_num);
 			self = str_append(self, buf);
 			if (!self)
-				return NULL;
+				goto exit;
 
 			break;
 		case 'f':
@@ -484,19 +484,20 @@ str_t str_format(str_t self, const char *fmt, ...)
 			pos += (size_t)snprintf(buf, BUFSIZE, "%g", f_num);
 			self = str_append(self, buf);
 			if (!self)
-				return NULL;
+				goto exit;
 
 			break;
 		default:
 			self = str_append(self, "???");
 			if (!self)
-				return NULL;
+				goto exit;
 
 			pos += strlen("???");
 			continue;
 		}
 	} while (*(++fmt) != '\0');
 
+exit:
 	va_end(ap);
 
 	return self;
