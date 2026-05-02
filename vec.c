@@ -25,6 +25,9 @@ static inline __attribute__((pure)) vec_obj_t *vec_object(vec_t self)
 
 static inline size_t vec_size(size_t unit_size, size_t capacity)
 {
+	if (unit_size > SIZE_MAX / capacity)
+		return 0;
+
 	return sizeof(vec_obj_t) + unit_size * capacity;
 }
 
@@ -80,7 +83,11 @@ vec_t vec_resize(vec_t self, const size_t count)
 			new_capacity *= 2;
 		}
 
-		vec_obj_t *new_obj = realloc(obj, vec_size(obj->unit_size, new_capacity));
+		size_t alloc_size = vec_size(obj->unit_size, new_capacity);
+	if (!alloc_size)
+		return NULL;
+
+	vec_obj_t *new_obj = realloc(obj, alloc_size);
 		if (!new_obj)
 			return NULL;
 
