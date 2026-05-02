@@ -258,6 +258,17 @@ static void test_str_replace_consecutive(void)
 	str_free(str);
 }
 
+static void test_str_replace_overlapping(void)
+{
+	str_t str = str_new("XXXXX");
+
+	str = str_replace(str, "XX", "-", -1);
+	assert(str);
+	assert(memcmp(str, "--X", str_length(str)) == 0);
+
+	str_free(str);
+}
+
 static void test_str_remove(void)
 {
 	str_t str = str_new("hello world hello");
@@ -566,6 +577,7 @@ int main(void)
 	RUN_TEST(test_str_replace_grow_multiple);
 	RUN_TEST(test_str_replace_at_boundaries);
 	RUN_TEST(test_str_replace_consecutive);
+	RUN_TEST(test_str_replace_overlapping);
 	RUN_TEST(test_str_find);
 	RUN_TEST(test_str_find_no_match);
 	RUN_TEST(test_str_find_empty_pattern);

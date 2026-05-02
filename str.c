@@ -294,16 +294,17 @@ str_t str_replace(str_t self, const char *old_str, const char *new_str,
 
 	size_t len_new = strlen(new_str);
 	long long shift = (long long)len_new - (long long)len_old;
-	size_t index, val, self_len;
+	size_t index, val, self_len, last_end = 0;
 
 	for (size_t i = 0; i < pos_count; i++) {
 		if (i >= (size_t)count)
 			break;
 
-		// get next substring position
 		vec_get(pos, i, &index);
 
-		// `self` size might change every loop
+		if (index < last_end)
+			continue;
+
 		self_len = str_length(self);
 
 	if (shift >= 0) {
@@ -340,6 +341,8 @@ str_t str_replace(str_t self, const char *old_str, const char *new_str,
 
 		for (size_t j = 0; j < len_new; j++)
 			vec_set(self, index + j, new_str + j);
+
+		last_end = index + len_new;
 	}
 
 exit:
