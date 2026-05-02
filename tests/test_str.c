@@ -879,6 +879,56 @@ static void test_str_format_multiple_percents(void)
 	str_free(str);
 }
 
+static void test_str_format_reused_string_null_terminated(void)
+{
+	str_t str = str_new("hello world");
+
+	str = str_format(str, "ab");
+	assert(str);
+	assert(str_length(str) == 2);
+	assert(strcmp(str, "ab") == 0);
+
+	str_free(str);
+}
+
+static void test_str_format_reused_string_with_specifiers(void)
+{
+	str_t str = str_new("xxxxxxxxxxxxxxxx");
+
+	str = str_format(str, "%s=%i", "val", 42);
+	assert(str);
+	assert(str_length(str) == 6);
+	assert(strcmp(str, "val=42") == 0);
+
+	str_free(str);
+}
+
+static void test_str_insert_empty_into_empty(void)
+{
+	str_t str = str_empty();
+
+	str = str_insert(str, 0, "");
+	assert(str);
+	assert(str_length(str) == 0);
+
+	str_free(str);
+}
+
+static void test_str_split_no_leak_verify(void)
+{
+	str_t str = str_new("one,two,three");
+
+	vec_str_t tok = str_split(str, ",");
+	assert(tok);
+	assert(vec_count(tok) == 3);
+	assert(memcmp(tok[0], "one", str_length(tok[0])) == 0);
+	assert(memcmp(tok[1], "two", str_length(tok[1])) == 0);
+	assert(memcmp(tok[2], "three", str_length(tok[2])) == 0);
+
+	str_list_free(tok);
+	str_free(str);
+}
+
 int main(void)
 {
 	RUN_TEST(test_str_range_forward);
@@ -956,6 +1006,10 @@ int main(void)
 	RUN_TEST(test_str_format_negative_int);
 	RUN_TEST(test_str_format_negative_float);
 	RUN_TEST(test_str_format_multiple_percents);
+	RUN_TEST(test_str_format_reused_string_null_terminated);
+	RUN_TEST(test_str_format_reused_string_with_specifiers);
+	RUN_TEST(test_str_insert_empty_into_empty);
+	RUN_TEST(test_str_split_no_leak_verify);
 
 	return 0;
 }
