@@ -234,6 +234,183 @@ static void test_vec_resize_large_unit_overflow(void)
 	assert(result == NULL);
 }
 
+static void test_vec_resize_shrink(void)
+{
+	size_t *vec = vec_new_len(sizeof(size_t), 100);
+
+	for (size_t i = 0; i < 100; i++)
+		vec_set(vec, i, &i);
+
+	vec = vec_resize(vec, 50);
+	assert(vec);
+	assert(vec_count(vec) == 50);
+
+	size_t item;
+	for (size_t i = 0; i < 50; i++) {
+		vec_get(vec, i, &item);
+		assert(item == i);
+	}
+
+	vec_free(vec);
+}
+
+static void test_vec_resize_same_size(void)
+{
+	size_t *vec = vec_new_len(sizeof(size_t), 10);
+
+	vec = vec_resize(vec, 10);
+	assert(vec);
+	assert(vec_count(vec) == 10);
+
+	vec_free(vec);
+}
+
+static void test_vec_extend_multiple(void)
+{
+	size_t *vec = vec_new(sizeof(size_t));
+
+	vec = vec_extend(vec, 5);
+	assert(vec);
+	assert(vec_count(vec) == 5);
+
+	vec_free(vec);
+}
+
+static void test_vec_get_empty(void)
+{
+	size_t *vec = vec_new(sizeof(size_t));
+	size_t item = 42;
+
+	vec_get(vec, 0, &item);
+	assert(item == 42);
+
+	vec_free(vec);
+}
+
+static void test_vec_copy_zero_len(void)
+{
+	size_t *vec = vec_new_len(sizeof(size_t), 10);
+	size_t data[] = {99, 98, 97};
+
+	vec_copy(vec, 0, data, 0);
+	assert(vec_count(vec) == 10);
+
+	size_t item;
+	for (size_t i = 0; i < 10; i++) {
+		vec_get(vec, i, &item);
+		assert(item == 0);
+	}
+
+	vec_free(vec);
+}
+
+static void test_vec_copy_partial(void)
+{
+	size_t *vec = vec_new_len(sizeof(size_t), 5);
+	size_t data[] = {10, 20, 30, 40, 50};
+
+	for (size_t i = 0; i < 5; i++)
+		vec_set(vec, i, &i);
+
+	vec_copy(vec, 2, data, 2);
+
+	size_t item;
+	vec_get(vec, 2, &item);
+	assert(item == 10);
+	vec_get(vec, 3, &item);
+	assert(item == 20);
+	vec_get(vec, 4, &item);
+	assert(item == 4);
+
+	vec_free(vec);
+}
+
+static void test_vec_resize_preserves_data(void)
+{
+	size_t *vec = vec_new_len(sizeof(size_t), 10);
+
+	for (size_t i = 0; i < 10; i++)
+		vec_set(vec, i, &i);
+
+	size_t old_cap = vec_capacity(vec);
+
+	vec = vec_resize(vec, 200);
+	assert(vec);
+	assert(vec_count(vec) == 200);
+	assert(vec_capacity(vec) > old_cap);
+
+	size_t item;
+	for (size_t i = 0; i < 10; i++) {
+		vec_get(vec, i, &item);
+		assert(item == i);
+	}
+
+	vec_free(vec);
+}
+
+static void test_vec_new_len_zero_count(void)
+{
+	vec_t vec = vec_new_len(sizeof(int), 0);
+
+	assert(vec_count(vec) == 0);
+	assert(vec_capacity(vec) == VEC_INIT_CAPACITY);
+
+	vec_free(vec);
+}
+
+static void test_vec_set_get_first_last(void)
+{
+	const size_t len = 3;
+	size_t *vec = vec_new_len(sizeof(size_t), len);
+
+	size_t zero = 0;
+	size_t last = 999;
+	vec_set(vec, 0, &zero);
+	vec_set(vec, 2, &last);
+
+	size_t item;
+	vec_get(vec, 0, &item);
+	assert(item == 0);
+	vec_get(vec, 1, &item);
+	assert(item == 0);
+	vec_get(vec, 2, &item);
+	assert(item == 999);
+
+	vec_free(vec);
+}
+
+static void test_vec_free(void)
+{
+	size_t *vec = vec_new_len(sizeof(size_t), 5);
+
+	for (size_t i = 0; i < 5; i++)
+		vec_set(vec, i, &i);
+
+	vec_free(vec);
+}
+
+static void test_vec_copy_into_empty(void)
+{
+	size_t *vec = vec_new(sizeof(size_t));
+	size_t data[] = {42};
+
+	vec_copy(vec, 0, data, 1);
+	assert(vec_count(vec) == 0);
+
+	vec_free(vec);
+}
+
+static void test_vec_extend_zero(void)
+{
+	size_t *vec = vec_new(sizeof(size_t));
+
+	vec = vec_extend(vec, 0);
+	assert(vec);
+	assert(vec_count(vec) == 0);
+
+	vec_free(vec);
+}
+
 int main(void)
 {
 	RUN_TEST(test_vec_new);
@@ -250,6 +427,18 @@ int main(void)
 	RUN_TEST(test_vec_ptr_at_oob);
 	RUN_TEST(test_vec_copy);
 	RUN_TEST(test_vec_copy_out_of_bounds);
+	RUN_TEST(test_vec_resize_shrink);
+	RUN_TEST(test_vec_resize_same_size);
+	RUN_TEST(test_vec_extend_multiple);
+	RUN_TEST(test_vec_get_empty);
+	RUN_TEST(test_vec_copy_zero_len);
+	RUN_TEST(test_vec_copy_partial);
+	RUN_TEST(test_vec_resize_preserves_data);
+	RUN_TEST(test_vec_new_len_zero_count);
+	RUN_TEST(test_vec_set_get_first_last);
+	RUN_TEST(test_vec_free);
+	RUN_TEST(test_vec_copy_into_empty);
+	RUN_TEST(test_vec_extend_zero);
 
 	return 0;
 }

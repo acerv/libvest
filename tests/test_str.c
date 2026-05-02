@@ -578,6 +578,307 @@ static void test_str_range_empty(void)
 	str_free(str);
 }
 
+static void test_str_insert_beyond_length(void)
+{
+	str_t str = str_new("hello");
+
+	str_t result = str_insert(str, 10, "world");
+	assert(result == NULL);
+
+	str_free(str);
+}
+
+static void test_str_insert_empty(void)
+{
+	str_t str = str_new("hello");
+
+	str = str_insert(str, 3, "");
+	assert(str);
+	assert(memcmp(str, "hello", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_insert_middle(void)
+{
+	str_t str = str_new("abcde");
+
+	str = str_insert(str, 2, "XY");
+	assert(str);
+	assert(memcmp(str, "abXYcde", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_append_empty(void)
+{
+	str_t str = str_new("hello");
+
+	str = str_append(str, "");
+	assert(str);
+	assert(memcmp(str, "hello", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_clear_then_append(void)
+{
+	str_t str = str_new("hello");
+
+	str = str_clear(str);
+	assert(str_length(str) == 0);
+
+	str = str_append(str, "world");
+	assert(str);
+	assert(memcmp(str, "world", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_split_single_token(void)
+{
+	str_t str = str_new("hello");
+
+	vec_str_t tok = str_split(str, ",");
+	assert(tok);
+	assert(vec_count(tok) == 1);
+	assert(memcmp(tok[0], "hello", str_length(tok[0])) == 0);
+
+	str_list_free(tok);
+	str_free(str);
+}
+
+static void test_str_split_all_separators(void)
+{
+	str_t str = str_new(",,,");
+
+	vec_str_t tok = str_split(str, ",");
+	assert(tok);
+	assert(vec_count(tok) == 0);
+
+	str_list_free(tok);
+	str_free(str);
+}
+
+static void test_str_split_empty_string(void)
+{
+	str_t str = str_new("");
+
+	vec_str_t tok = str_split(str, ",");
+	assert(tok);
+	assert(vec_count(tok) == 0);
+
+	str_list_free(tok);
+	str_free(str);
+}
+
+static void test_str_remove_no_match(void)
+{
+	str_t str = str_new("hello");
+
+	str = str_remove(str, "xyz");
+	assert(str);
+	assert(memcmp(str, "hello", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_remove_entire_string(void)
+{
+	str_t str = str_new("hello");
+
+	str = str_remove(str, "hello");
+	assert(str);
+	assert(str_length(str) == 0);
+
+	str_free(str);
+}
+
+static void test_str_repeat_once(void)
+{
+	str_t str = str_new("hi");
+
+	str = str_repeat(str, 1);
+	assert(str);
+	assert(memcmp(str, "hi", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_repeat_empty(void)
+{
+	str_t str = str_new("");
+
+	str = str_repeat(str, 5);
+	assert(str);
+	assert(str_length(str) == 0);
+
+	str_free(str);
+}
+
+static void test_str_range_full_string(void)
+{
+	str_t str = str_new("hello");
+
+	str_t str_r = str_range(str, 0, 5);
+	assert(str_r);
+	assert(memcmp(str_r, "hello", str_length(str_r)) == 0);
+
+	str_free(str_r);
+	str_free(str);
+}
+
+static void test_str_range_single_char(void)
+{
+	str_t str = str_new("hello");
+
+	str_t str_r = str_range(str, 2, 3);
+	assert(str_r);
+	assert(memcmp(str_r, "l", str_length(str_r)) == 0);
+
+	str_free(str_r);
+	str_free(str);
+}
+
+static void test_str_format_empty(void)
+{
+	str_t str = str_new("keep me");
+
+	str = str_format(str, "");
+	assert(str);
+	assert(memcmp(str, "keep me", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_format_literals_only(void)
+{
+	str_t str = str_empty();
+
+	str = str_format(str, "hello world");
+	assert(str);
+	assert(memcmp(str, "hello world", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_format_mixed(void)
+{
+	str_t str = str_empty();
+
+	str = str_format(str, "%s has %i items", "box", 42);
+	assert(str);
+	assert(memcmp(str, "box has 42 items", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_find_single_char(void)
+{
+	str_t str = str_new("abacada");
+
+	vec_index_t pos = str_find(str, "a");
+	assert(pos);
+	assert(vec_count(pos) == 4);
+	assert(pos[0] == 0);
+	assert(pos[1] == 2);
+	assert(pos[2] == 4);
+	assert(pos[3] == 6);
+
+	vec_free(pos);
+	str_free(str);
+}
+
+static void test_str_find_full_string(void)
+{
+	str_t str = str_new("hello");
+
+	vec_index_t pos = str_find(str, "hello");
+	assert(pos);
+	assert(vec_count(pos) == 1);
+	assert(pos[0] == 0);
+
+	vec_free(pos);
+	str_free(str);
+}
+
+static void test_str_find_at_end(void)
+{
+	str_t str = str_new("hello world");
+
+	vec_index_t pos = str_find(str, "world");
+	assert(pos);
+	assert(vec_count(pos) == 1);
+	assert(pos[0] == 6);
+
+	vec_free(pos);
+	str_free(str);
+}
+
+static void test_str_replace_same_size(void)
+{
+	str_t str = str_new("hello world");
+
+	str = str_replace(str, "world", "earth", -1);
+	assert(str);
+	assert(memcmp(str, "hello earth", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_replace_count_zero(void)
+{
+	str_t str = str_new("aaa");
+
+	str = str_replace(str, "a", "b", 0);
+	assert(str);
+	assert(memcmp(str, "aaa", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_length_empty(void)
+{
+	str_t str = str_empty();
+
+	assert(str_length(str) == 0);
+
+	str_free(str);
+}
+
+static void test_str_format_negative_int(void)
+{
+	str_t str = str_empty();
+
+	str = str_format(str, "val=%i", -42);
+	assert(str);
+	assert(memcmp(str, "val=-42", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_format_negative_float(void)
+{
+	str_t str = str_empty();
+
+	str = str_format(str, "%f", -3.14);
+	assert(str);
+	assert(memcmp(str, "-3.14", str_length(str)) == 0);
+
+	str_free(str);
+}
+
+static void test_str_format_multiple_percents(void)
+{
+	str_t str = str_empty();
+
+	str = str_format(str, "100%% of %i%% is %i%%", 100, 100);
+	assert(str);
+	assert(memcmp(str, "100% of 100% is 100%", str_length(str)) == 0);
+
+	str_free(str);
+}
+
 int main(void)
 {
 	RUN_TEST(test_str_range_forward);
@@ -629,6 +930,32 @@ int main(void)
 	RUN_TEST(test_str_endswith_no_match);
 	RUN_TEST(test_str_insert_at_end);
 	RUN_TEST(test_str_empty);
+	RUN_TEST(test_str_insert_beyond_length);
+	RUN_TEST(test_str_insert_empty);
+	RUN_TEST(test_str_insert_middle);
+	RUN_TEST(test_str_append_empty);
+	RUN_TEST(test_str_clear_then_append);
+	RUN_TEST(test_str_split_single_token);
+	RUN_TEST(test_str_split_all_separators);
+	RUN_TEST(test_str_split_empty_string);
+	RUN_TEST(test_str_remove_no_match);
+	RUN_TEST(test_str_remove_entire_string);
+	RUN_TEST(test_str_repeat_once);
+	RUN_TEST(test_str_repeat_empty);
+	RUN_TEST(test_str_range_full_string);
+	RUN_TEST(test_str_range_single_char);
+	RUN_TEST(test_str_format_empty);
+	RUN_TEST(test_str_format_literals_only);
+	RUN_TEST(test_str_format_mixed);
+	RUN_TEST(test_str_find_single_char);
+	RUN_TEST(test_str_find_full_string);
+	RUN_TEST(test_str_find_at_end);
+	RUN_TEST(test_str_replace_same_size);
+	RUN_TEST(test_str_replace_count_zero);
+	RUN_TEST(test_str_length_empty);
+	RUN_TEST(test_str_format_negative_int);
+	RUN_TEST(test_str_format_negative_float);
+	RUN_TEST(test_str_format_multiple_percents);
 
 	return 0;
 }
