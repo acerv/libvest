@@ -65,8 +65,7 @@ static void test_str_utf8_invalid_surrogate(void)
 	str_t str = str_new_len(3);
 
 	str[0] = (char)0xED;
-	str[1] = (char)0xA0;
-	str[1] = (char)0xA0;
+
 	str[2] = (char)0x80;
 
 	assert(!str_utf8_valid(str));
@@ -501,6 +500,122 @@ static void test_str_utf8_integration_iterate(void)
 	str_free(str);
 }
 
+/* Bug fix tests — decode edge cases */
+
+static void test_str_utf8_decode_null_byte(void)
+{
+	size_t len;
+	uint32_t cp;
+
+	cp = str_utf8_decode("\x00", &len);
+	assert(cp == 0x0000);
+	assert(len == 1);
+}
+
+static void test_str_utf8_decode_surrogate_byte_len(void)
+{
+	size_t len;
+	uint32_t cp;
+	char buf[3];
+
+	buf[0] = (char)0xED;
+	buf[1] = (char)0xA0;
+	buf[2] = (char)0x80;
+
+	cp = str_utf8_decode(buf, &len);
+	assert(cp == 0xFFFD);
+	assert(len == 1);
+}
+
+static void test_str_utf8_decode_out_of_range_byte_len(void)
+{
+	size_t len;
+	uint32_t cp;
+	char buf[4];
+
+	buf[0] = (char)0xF4;
+	buf[1] = (char)0x90;
+	buf[2] = (char)0x80;
+	buf[3] = (char)0x80;
+
+	cp = str_utf8_decode(buf, &len);
+	assert(cp == 0xFFFD);
+	assert(len == 1);
+}
+
+/* Bug fix tests — invalid sequence handling in higher-level functions */
+
+static void test_str_char_count_skip_invalid(void)
+{
+	str_t str = str_new("hello");
+	str[2] = (char)0xFF;
+
+	assert(str_char_count(str) == 4);
+
+	str_free(str);
+}
+
+static void test_str_char_count_embedded_null(void)
+{
+	str_t str = str_new_len(3);
+
+	str[0] = 'a';
+	str[1] = '\0';
+	str[2] = 'b';
+
+	assert(str_char_count(str) == 3);
+
+	str_free(str);
+}
+
+static void test_str_utf8_byte_at_skip_invalid(void)
+{
+	str_t str = str_new("hello");
+	str[2] = (char)0xFF;
+
+	assert(str_utf8_byte_at(str, 0) == 0);
+	assert(str_utf8_byte_at(str, 1) == 1);
+	assert(str_utf8_byte_at(str, 2) == 3);
+	assert(str_utf8_byte_at(str, 3) == 4);
+
+	str_free(str);
+}
+
+static void test_str_utf8_next_invalid_byte(void)
+{
+	str_t str = str_new("hello");
+	str[2] = (char)0xFF;
+
+	assert(str_utf8_next(str, 1) == 2);
+	assert(str_utf8_next(str, 2) == 3);
+
+	str_free(str);
+}
+
+static void test_str_utf8_prev_skip_invalid(void)
+{
+	str_t str = str_new("hello");
+	str[2] = (char)0xFF;
+
+	assert(str_utf8_prev(str, 5) == 4);
+	assert(str_utf8_prev(str, 4) == 3);
+	assert(str_utf8_prev(str, 3) == 1);
+
+	str_free(str);
+}
+
+static void test_str_utf8_valid_embedded_null(void)
+{
+	str_t str = str_new_len(3);
+
+	str[0] = 'a';
+	str[1] = '\0';
+	str[2] = 'b';
+
+	assert(str_utf8_valid(str));
+
+	str_free(str);
+}
 int main(void)
 {
 	RUN_TEST(test_str_utf8_valid_ascii);
@@ -548,6 +663,16 @@ int main(void)
 	RUN_TEST(test_str_utf8_integration_replace);
 	RUN_TEST(test_str_utf8_integration_find);
 	RUN_TEST(test_str_utf8_integration_iterate);
+	RUN_TEST(test_str_utf8_decode_null_byte);
+	RUN_TEST(test_str_utf8_decode_surrogate_byte_len);
+	RUN_TEST(test_str_utf8_decode_out_of_range_byte_len);
+	RUN_TEST(test_str_char_count_skip_invalid);
+	RUN_TEST(test_str_char_count_embedded_null);
+	RUN_TEST(test_str_utf8_byte_at_skip_invalid);
+	RUN_TEST(test_str_utf8_next_invalid_byte);
+	RUN_TEST(test_str_utf8_prev_skip_invalid);
+	RUN_TEST(test_str_utf8_valid_embedded_null);
 
 	return 0;
 }
+

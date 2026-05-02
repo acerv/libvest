@@ -535,6 +535,7 @@ exit:
 }
 
 
+
 /* UTF-8 implementation (RFC 3629) */
 
 static inline int utf8_byte_len(uint8_t byte)
@@ -563,10 +564,6 @@ uint32_t str_utf8_decode(const char *bytes, size_t *out_len)
 	}
 
 	b = (uint8_t)*bytes;
-	if (b == '\0') {
-		*out_len = 0;
-		return 0xFFFD;
-	}
 
 	len = utf8_byte_len(b);
 	if (len == 0) {
@@ -609,8 +606,10 @@ uint32_t str_utf8_decode(const char *bytes, size_t *out_len)
 			*out_len = 1;
 			return 0xFFFD;
 		}
-		if (cp >= 0xD800 && cp <= 0xDFFF)
+		if (cp >= 0xD800 && cp <= 0xDFFF) {
+			*out_len = 1;
 			return 0xFFFD;
+		}
 		break;
 	case 4:
 		cp = ((uint32_t)(b & 0x07) << 18) |
@@ -621,8 +620,10 @@ uint32_t str_utf8_decode(const char *bytes, size_t *out_len)
 			*out_len = 1;
 			return 0xFFFD;
 		}
-		if (cp > 0x10FFFF)
+		if (cp > 0x10FFFF) {
+			*out_len = 1;
 			return 0xFFFD;
+		}
 		break;
 	default:
 		cp = 0xFFFD;
@@ -684,6 +685,7 @@ bool str_utf8_valid(str_t self)
 size_t str_char_count(str_t self)
 {
 	size_t i, len, byte_len, count;
+	uint32_t cp;
 
 	if (!self)
 		return 0;
@@ -692,9 +694,13 @@ size_t str_char_count(str_t self)
 	count = 0;
 	i = 0;
 	while (i < len) {
-		str_utf8_decode(self + i, &byte_len);
+		cp = str_utf8_decode(self + i, &byte_len);
 		if (byte_len == 0)
 			break;
+		if (cp == 0xFFFD) {
+			i++;
+			continue;
+		}
 		count++;
 		i += byte_len;
 	}
@@ -705,6 +711,7 @@ size_t str_char_count(str_t self)
 size_t str_utf8_byte_at(str_t self, size_t cp_index)
 {
 	size_t i, len, byte_len, count;
+	uint32_t cp;
 
 	if (!self)
 		return 0;
@@ -713,11 +720,15 @@ size_t str_utf8_byte_at(str_t self, size_t cp_index)
 	count = 0;
 	i = 0;
 	while (i < len) {
-		if (count == cp_index)
-			return i;
-		str_utf8_decode(self + i, &byte_len);
+		cp = str_utf8_decode(self + i, &byte_len);
 		if (byte_len == 0)
 			break;
+		if (cp == 0xFFFD) {
+			i++;
+			continue;
+		}
+		if (count == cp_index)
+			return i;
 		count++;
 		i += byte_len;
 	}
@@ -728,6 +739,7 @@ size_t str_utf8_byte_at(str_t self, size_t cp_index)
 size_t str_utf8_next(str_t self, size_t byte_offset)
 {
 	size_t len, byte_len;
+	uint32_t cp;
 
 	if (!self)
 		return byte_offset;
@@ -736,8 +748,10 @@ size_t str_utf8_next(str_t self, size_t byte_offset)
 	if (byte_offset >= len)
 		return byte_offset;
 
-	str_utf8_decode(self + byte_offset, &byte_len);
+	cp = str_utf8_decode(self + byte_offset, &byte_len);
 	if (byte_len == 0)
+		return byte_offset + 1;
+	if (cp == 0xFFFD)
 		return byte_offset + 1;
 
 	return byte_offset + byte_len;
@@ -746,6 +760,8 @@ size_t str_utf8_next(str_t self, size_t byte_offset)
 size_t str_utf8_prev(str_t self, size_t byte_offset)
 {
 	size_t i, prev;
+	uint32_t cp;
+	size_t byte_len;
 
 	if (!self || byte_offset == 0)
 		return 0;
@@ -753,10 +769,13 @@ size_t str_utf8_prev(str_t self, size_t byte_offset)
 	prev = 0;
 	i = 0;
 	while (i < byte_offset) {
-		size_t byte_len;
-		str_utf8_decode(self + i, &byte_len);
+		cp = str_utf8_decode(self + i, &byte_len);
 		if (byte_len == 0)
 			break;
+		if (cp == 0xFFFD) {
+			i++;
+			continue;
+		}
 		prev = i;
 		i += byte_len;
 	}
