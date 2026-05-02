@@ -107,15 +107,15 @@ size_t vec_capacity(const vec_t self)
 
 void *vec_ptr_at(vec_t self, size_t pos)
 {
+	vec_obj_t *obj = vec_object(self);
+	if (obj->count == 0)
+		return NULL;
+
 	if (!pos)
 		return self;
 
-	vec_obj_t *obj = vec_object(self);
-	if (obj->count == 0)
-		return self;
-
 	if (pos >= obj->count)
-		return obj->data + (obj->count  - 1) * obj->unit_size;
+		return obj->data + (obj->count - 1) * obj->unit_size;
 
 	return obj->data + pos * obj->unit_size;
 }
