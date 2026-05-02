@@ -65,15 +65,19 @@ vec_t vec_resize(vec_t self, const size_t count)
 	size_t old_size = obj->count;
 
 	if (count >= obj->capacity) {
-		while (count >= obj->capacity)
-			obj->capacity *= 2;
+		size_t new_capacity = obj->capacity;
+		while (count >= new_capacity)
+			new_capacity *= 2;
 
-		obj = realloc(obj, vec_size(obj->unit_size, obj->capacity));
-		if (!obj)
+		vec_obj_t *new_obj = realloc(obj, vec_size(obj->unit_size, new_capacity));
+		if (!new_obj)
 			return NULL;
 
+		obj = new_obj;
+		obj->capacity = new_capacity;
+
 		memset(obj->data + (old_size * obj->unit_size),
-			0, (obj->capacity  - old_size) * obj->unit_size);
+			0, (obj->capacity - old_size) * obj->unit_size);
 	}
 
 	obj->count = count;
