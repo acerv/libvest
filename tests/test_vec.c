@@ -216,12 +216,23 @@ static void test_vec_new_len_overflow(void)
 	assert(vec == NULL);
 }
 
+static void test_vec_resize_overflow(void)
+{
+	size_t *vec = vec_new_len(sizeof(size_t), 1);
+
+	vec_t result = vec_resize(vec, SIZE_MAX);
+	assert(result == NULL);
+
+	vec_free(vec);
+}
+
 int main(void)
 {
 	RUN_TEST(test_vec_new);
 	RUN_TEST(test_vec_new_len);
 	RUN_TEST(test_vec_new_len_overflow);
 	RUN_TEST(test_vec_resize);
+	RUN_TEST(test_vec_resize_overflow);
 	RUN_TEST(test_vec_extend);
 	RUN_TEST(test_vec_set_get);
 	RUN_TEST(test_vec_ptr_at);
