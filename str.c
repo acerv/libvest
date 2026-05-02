@@ -533,3 +533,233 @@ exit:
 
 	return self;
 }
+
+
+/* UTF-8 implementation (RFC 3629) */
+
+static inline int utf8_byte_len(uint8_t byte)
+{
+	if (byte <= 0x7F)
+		return 1;
+	if ((byte & 0xE0) == 0xC0)
+		return 2;
+	if ((byte & 0xF0) == 0xE0)
+		return 3;
+	if ((byte & 0xF8) == 0xF0)
+		return 4;
+	return 0;
+}
+
+uint32_t str_utf8_decode(const char *bytes, size_t *out_len)
+{
+	uint8_t b;
+	int len;
+	uint32_t cp;
+
+	if (!bytes || !out_len) {
+		if (out_len)
+			*out_len = 0;
+		return 0xFFFD;
+	}
+
+	b = (uint8_t)*bytes;
+	if (b == '\0') {
+		*out_len = 0;
+		return 0xFFFD;
+	}
+
+	len = utf8_byte_len(b);
+	if (len == 0) {
+		*out_len = 1;
+		return 0xFFFD;
+	}
+
+	if (len >= 2 && ((uint8_t)bytes[1] < 0x80 || (uint8_t)bytes[1] > 0xBF)) {
+		*out_len = 1;
+		return 0xFFFD;
+	}
+	if (len >= 3 && ((uint8_t)bytes[2] < 0x80 || (uint8_t)bytes[2] > 0xBF)) {
+		*out_len = 2;
+		return 0xFFFD;
+	}
+	if (len == 4 && ((uint8_t)bytes[3] < 0x80 || (uint8_t)bytes[3] > 0xBF)) {
+		*out_len = 3;
+		return 0xFFFD;
+	}
+
+	*out_len = (size_t)len;
+
+	switch (len) {
+	case 1:
+		cp = (uint32_t)b;
+		break;
+	case 2:
+		cp = ((uint32_t)(b & 0x1F) << 6) |
+		     ((uint32_t)(bytes[1] & 0x3F));
+		if (cp < 0x80) {
+			*out_len = 1;
+			return 0xFFFD;
+		}
+		break;
+	case 3:
+		cp = ((uint32_t)(b & 0x0F) << 12) |
+		     ((uint32_t)(bytes[1] & 0x3F) << 6) |
+		     ((uint32_t)(bytes[2] & 0x3F));
+		if (cp < 0x800) {
+			*out_len = 1;
+			return 0xFFFD;
+		}
+		if (cp >= 0xD800 && cp <= 0xDFFF)
+			return 0xFFFD;
+		break;
+	case 4:
+		cp = ((uint32_t)(b & 0x07) << 18) |
+		     ((uint32_t)(bytes[1] & 0x3F) << 12) |
+		     ((uint32_t)(bytes[2] & 0x3F) << 6) |
+		     ((uint32_t)(bytes[3] & 0x3F));
+		if (cp < 0x10000) {
+			*out_len = 1;
+			return 0xFFFD;
+		}
+		if (cp > 0x10FFFF)
+			return 0xFFFD;
+		break;
+	default:
+		cp = 0xFFFD;
+		break;
+	}
+
+	return cp;
+}
+
+size_t str_utf8_encode(char *out, uint32_t codepoint)
+{
+	if (codepoint <= 0x7F) {
+		out[0] = (char)codepoint;
+		return 1;
+	}
+	if (codepoint <= 0x7FF) {
+		out[0] = (char)(0xC0 | (codepoint >> 6));
+		out[1] = (char)(0x80 | (codepoint & 0x3F));
+		return 2;
+	}
+	if (codepoint >= 0xD800 && codepoint <= 0xDFFF)
+		return 0;
+	if (codepoint <= 0xFFFF) {
+		out[0] = (char)(0xE0 | (codepoint >> 12));
+		out[1] = (char)(0x80 | ((codepoint >> 6) & 0x3F));
+		out[2] = (char)(0x80 | (codepoint & 0x3F));
+		return 3;
+	}
+	if (codepoint <= 0x10FFFF) {
+		out[0] = (char)(0xF0 | (codepoint >> 18));
+		out[1] = (char)(0x80 | ((codepoint >> 12) & 0x3F));
+		out[2] = (char)(0x80 | ((codepoint >> 6) & 0x3F));
+		out[3] = (char)(0x80 | (codepoint & 0x3F));
+		return 4;
+	}
+	return 0;
+}
+
+bool str_utf8_valid(str_t self)
+{
+	size_t i, len, byte_len;
+	uint32_t cp;
+
+	if (!self)
+		return false;
+
+	len = str_length(self);
+	i = 0;
+	while (i < len) {
+		cp = str_utf8_decode(self + i, &byte_len);
+		if (cp == 0xFFFD)
+			return false;
+		i += byte_len;
+	}
+
+	return true;
+}
+
+size_t str_char_count(str_t self)
+{
+	size_t i, len, byte_len, count;
+
+	if (!self)
+		return 0;
+
+	len = str_length(self);
+	count = 0;
+	i = 0;
+	while (i < len) {
+		str_utf8_decode(self + i, &byte_len);
+		if (byte_len == 0)
+			break;
+		count++;
+		i += byte_len;
+	}
+
+	return count;
+}
+
+size_t str_utf8_byte_at(str_t self, size_t cp_index)
+{
+	size_t i, len, byte_len, count;
+
+	if (!self)
+		return 0;
+
+	len = str_length(self);
+	count = 0;
+	i = 0;
+	while (i < len) {
+		if (count == cp_index)
+			return i;
+		str_utf8_decode(self + i, &byte_len);
+		if (byte_len == 0)
+			break;
+		count++;
+		i += byte_len;
+	}
+
+	return i;
+}
+
+size_t str_utf8_next(str_t self, size_t byte_offset)
+{
+	size_t len, byte_len;
+
+	if (!self)
+		return byte_offset;
+
+	len = str_length(self);
+	if (byte_offset >= len)
+		return byte_offset;
+
+	str_utf8_decode(self + byte_offset, &byte_len);
+	if (byte_len == 0)
+		return byte_offset + 1;
+
+	return byte_offset + byte_len;
+}
+
+size_t str_utf8_prev(str_t self, size_t byte_offset)
+{
+	size_t i, prev;
+
+	if (!self || byte_offset == 0)
+		return 0;
+
+	prev = 0;
+	i = 0;
+	while (i < byte_offset) {
+		size_t byte_len;
+		str_utf8_decode(self + i, &byte_len);
+		if (byte_len == 0)
+			break;
+		prev = i;
+		i += byte_len;
+	}
+
+	return prev;
+}

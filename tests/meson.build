@@ -4,6 +4,7 @@
 new_tests = [
     'test_str.c',
     'test_vec.c',
+    'test_str_utf8.c',
 ]
 
 foreach src : new_tests

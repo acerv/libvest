@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 /** @brief A simple string. */
 typedef char* str_t;
@@ -188,5 +189,82 @@ str_t str_range(const str_t self, size_t start, size_t end);
  * @return Formatted string.
  */
 str_t str_format(str_t self, const char *fmt, ...);
+
+/* UTF-8 support */
+
+/** @brief Check if a string is valid UTF-8.
+ *
+ * Walks the string and validates UTF-8 encoding. Rejects overlong
+ * sequences, surrogate halves, and codepoints above U+10FFFF.
+ *
+ * @param self The string.
+ * @return True if valid UTF-8, false otherwise.
+ */
+bool str_utf8_valid(str_t self);
+
+/** @brief Return the number of Unicode codepoints in a string.
+ *
+ * Unlike str_length(), which returns byte count, this returns the
+ * actual number of characters (codepoints) in the string.
+ *
+ * @param self The string.
+ * @return Number of codepoints.
+ */
+size_t str_char_count(str_t self) __attribute__((pure));
+
+/** @brief Convert a codepoint index to a byte offset.
+ *
+ * Returns the byte offset of the codepoint at position cp_index.
+ * If cp_index exceeds the number of codepoints, returns the byte
+ * offset of the null terminator.
+ *
+ * @param self The string.
+ * @param cp_index Codepoint index (0-based).
+ * @return Byte offset within the string.
+ */
+size_t str_utf8_byte_at(str_t self, size_t cp_index) __attribute__((pure));
+
+/** @brief Find the byte offset of the next UTF-8 codepoint boundary.
+ *
+ * Advances one codepoint forward from byte_offset. Useful for
+ * iterating through a string without splitting multi-byte characters.
+ *
+ * @param self The string.
+ * @param byte_offset Current byte offset.
+ * @return Byte offset of the next codepoint, or current offset if at end.
+ */
+size_t str_utf8_next(str_t self, size_t byte_offset) __attribute__((pure));
+
+/** @brief Find the byte offset of the previous UTF-8 codepoint boundary.
+ *
+ * Moves one codepoint backward from byte_offset.
+ *
+ * @param self The string.
+ * @param byte_offset Current byte offset.
+ * @return Byte offset of the previous codepoint, or 0 if at start.
+ */
+size_t str_utf8_prev(str_t self, size_t byte_offset) __attribute__((pure));
+
+/** @brief Decode a single UTF-8 codepoint from bytes.
+ *
+ * Reads the codepoint at bytes and stores its byte length in out_len.
+ * Returns the decoded codepoint value, or U+FFFD on invalid input.
+ *
+ * @param bytes Pointer to UTF-8 bytes.
+ * @param out_len Output: number of bytes consumed (1-4).
+ * @return Decoded codepoint (0 to U+10FFFF, or U+FFFD on error).
+ */
+uint32_t str_utf8_decode(const char *bytes, size_t *out_len);
+
+/** @brief Encode a single codepoint as UTF-8.
+ *
+ * Writes the UTF-8 encoding of codepoint to out.
+ *
+ * @param out Output buffer (must have at least 4 bytes).
+ * @param codepoint Unicode codepoint (0 to U+10FFFF).
+ * @return Number of bytes written (1-4), or 0 on invalid codepoint.
+ */
+size_t str_utf8_encode(char *out, uint32_t codepoint);
+
 
 #endif
