@@ -226,6 +226,16 @@ static void test_vec_resize_overflow(void)
 	vec_free(vec);
 }
 
+static void test_vec_extend_overflow(void)
+{
+	size_t *vec = vec_new_len(sizeof(size_t), 1);
+
+	vec_t result = vec_extend(vec, SIZE_MAX);
+	assert(result == NULL);
+
+	vec_free(vec);
+}
+
 static void test_vec_resize_large_unit_overflow(void)
 {
 	vec_t vec = vec_new_len(1, 1);
@@ -420,6 +430,7 @@ int main(void)
 	RUN_TEST(test_vec_resize_overflow);
 	RUN_TEST(test_vec_resize_large_unit_overflow);
 	RUN_TEST(test_vec_extend);
+	RUN_TEST(test_vec_extend_overflow);
 	RUN_TEST(test_vec_set_get);
 	RUN_TEST(test_vec_ptr_at);
 	RUN_TEST(test_vec_ptr_at_empty_zero);

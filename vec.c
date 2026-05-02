@@ -105,7 +105,11 @@ vec_t vec_resize(vec_t self, const size_t count)
 
 vec_t vec_extend(vec_t self, const size_t count)
 {
-	return vec_resize(self, vec_count(self) + count);
+	size_t current = vec_count(self);
+	if (current > SIZE_MAX - count)
+		return NULL;
+
+	return vec_resize(self, current + count);
 }
 
 size_t vec_unit_size(const vec_t self)
