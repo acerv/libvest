@@ -227,7 +227,7 @@ vec_index_t str_find(const str_t self, const char *pat)
 	size_t i = 0;
 	size_t j = 0;
 	size_t *lps = NULL;
-	vec_index_t pos;
+	vec_index_t pos = NULL;
 
 	n = str_length(self);
 	m = strlen(pat);
