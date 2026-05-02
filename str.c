@@ -329,7 +329,7 @@ str_t str_replace(str_t self, const char *old_str, const char *new_str,
 
 		    vec_copy(self, index + len_new,
 			vec_ptr_at(self, index + len_old),
-			str_length(self) - index - len_old);
+			str_length(self) - index - len_new);
 		}
 
 		for (size_t j = 0; j < len_new; j++)
