@@ -287,7 +287,6 @@ str_t str_replace(str_t self, const char *old_str, const char *new_str,
 	if (!pos)
 		return NULL;
 
-	// TODO: this method needs to be completed
 	size_t pos_count = vec_count(pos);
 	if (!pos_count)
 		goto exit;
@@ -306,16 +305,14 @@ str_t str_replace(str_t self, const char *old_str, const char *new_str,
 		// `self` size might change every loop
 		self_len = str_length(self);
 
-		if (shift >= 0) {
-			// shift is positive, so we increment string size
-			self = str_extend(self, (size_t)shift);
-			if (!self)
-				goto exit;
+	if (shift >= 0) {
+		self = str_extend(self, (size_t)shift);
+		if (!self)
+			goto exit;
 
-			// move the next string before replacing
-			vec_copy(self, index + len_new,
-				vec_ptr_at(self, index + len_old),
-				self_len - index);
+		vec_copy(self, index + len_new,
+			vec_ptr_at(self, index + len_old),
+			self_len - index - len_old);
 
 			for (size_t j = i + 1; j < pos_count; j++) {
 				vec_get(pos, j, &val);
@@ -323,13 +320,15 @@ str_t str_replace(str_t self, const char *old_str, const char *new_str,
 				vec_set(pos, j, &val);
 			}
 		} else {
-		    self = str_resize(self, self_len - (size_t)(-1 * shift));
-		    if (!self)
-			goto exit;
+		    size_t remaining = self_len - index - len_old;
 
 		    vec_copy(self, index + len_new,
 			vec_ptr_at(self, index + len_old),
-			str_length(self) - index - len_new);
+			remaining);
+
+		    self = str_resize(self, self_len - (size_t)(-1 * shift));
+		    if (!self)
+			goto exit;
 
 		    for (size_t j = i + 1; j < pos_count; j++) {
 			vec_get(pos, j, &val);
