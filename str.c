@@ -131,6 +131,8 @@ vec_str_t str_split(const str_t self, const char *sep)
 		token = strtok(NULL, sep);
 	}
 
+	str_free(copy);
+
 	return vec_str;
 
 error:
