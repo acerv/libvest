@@ -32,8 +32,15 @@ vec_t vec_new_len(const size_t unit_size, const size_t count)
 {
 	size_t len = VEC_INIT_CAPACITY;
 
-	while (count > len)
+	if (unit_size > SIZE_MAX / len)
+		return NULL;
+
+	while (count > len) {
+		if (len > SIZE_MAX / 2)
+			return NULL;
+
 		len *= 2;
+	}
 
 	vec_obj_t *obj = malloc(vec_size(unit_size, len));
 	if (!obj)

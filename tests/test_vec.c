@@ -6,6 +6,7 @@
 #include "vec.h"
 #include "utils.h"
 #include <assert.h>
+#include <stdint.h>
 
 static void test_vec_new(void)
 {
@@ -208,10 +209,18 @@ static void test_vec_copy_out_of_bounds(void)
 	vec_free(vec);
 }
 
+static void test_vec_new_len_overflow(void)
+{
+	vec_t vec = vec_new_len(sizeof(size_t), SIZE_MAX);
+
+	assert(vec == NULL);
+}
+
 int main(void)
 {
 	RUN_TEST(test_vec_new);
 	RUN_TEST(test_vec_new_len);
+	RUN_TEST(test_vec_new_len_overflow);
 	RUN_TEST(test_vec_resize);
 	RUN_TEST(test_vec_extend);
 	RUN_TEST(test_vec_set_get);
